@@ -1,5 +1,5 @@
 /******************************************
-// HEARTSWITCH V.020.5 (blob master from april 2020)
+// HEARTSWITCH V.020.5 (blob master from 05.2020)
 // --- automates our actions ---
 // AUTHORS: C.Cipresso - A.Verde , 2016-2020 
 // DEVICE: Lolin NodeMCU V3 + max30100 heartbeat + Display OLED SSD1306 128x64 (16pxYellow+48pxCyan) + GPIO 2 buttons remote control
@@ -8,6 +8,8 @@
 // Reference Display: https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf
 // Reference Generic RFSwitch: https://github.com/sui77/rc-switch
 // Reference BLYNK: https://github.com/blynkkk/blynk-library/releases/latest
+
+// Download and build your shield here: http://www.heartswitch.eu/index.php/pre-order/developers.html
  ******************************************/
 #include <Wire.h> // I2C Library
 
@@ -19,9 +21,6 @@
 #include <Blynk.h>
 #include <BlynkSimpleEsp8266.h> // Blynk
 #include <OakOLED.h> // Display 
-
-
-// #include "Adafruit_GFX.h" // Monitor
 
 /* Pulse sensor */
 #include <MAX30105.h>
@@ -36,7 +35,7 @@ RCSwitch heartSwitch = RCSwitch(); // Define the heartswitch remote controller
 #include <WiFiUdp.h>
 
 
-#define REPORTING_PERIOD_MS 1000 // Ogni quanto si aggiornano i dati
+#define REPORTING_PERIOD_MS 1000 // this for shoot the data online every second
 
 // Initilize Display
 OakOLED oled; // Connections for OLED Display : SCL PIN - D1 , SDA PIN - D2 , INT PIN - D0
