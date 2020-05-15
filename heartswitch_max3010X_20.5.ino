@@ -54,7 +54,7 @@ const int statusPin = D5;
 /* Global variable for state of the time range : True if time in range, False if not */
 bool DateInRange;
 
-/* Local variables for taking data from blynk application
+/* Local variables for taking data VIRTUAL VAR application
  *  arduino store time range when receiving from app blynk
  *  the data will be received when user change information in the application.
  *  if reset accurs or power off power on, this information will reset and losed, so you can think in stocking data in eeprom and load it in starting up
@@ -360,7 +360,7 @@ void turnOFF() {
 }
 
 
-/***FROM BLYNK***/ 
+/***VIRTUAL VAR***/ 
 BLYNK_WRITE(V1)  { // V1= Event Type
   
   String stringNull;
@@ -393,7 +393,7 @@ BLYNK_WRITE(V1)  { // V1= Event Type
     
  }
 
-/***FROM BLYNK***/ 
+/***VIRTUAL VAR***/ 
 BLYNK_WRITE(V2) { // V2= Actions to be performed on BPM value (range parameter update)
 
     edge=param.asInt(); // Check threshold selected to manage it
@@ -410,11 +410,11 @@ BLYNK_WRITE(V2) { // V2= Actions to be performed on BPM value (range parameter u
   
 }
 
-/***FROM BLYNK***/ 
+/***VIRTUAL VAR***/ 
 BLYNK_WRITE(V3) { activator=param.asInt(); }  // V3= Type of action ON / OFF
-/***FROM BLYNK***/ 
+/***VIRTUAL VAR***/ 
 BLYNK_WRITE(V4) { enabled=param.asInt(); } // V4= Enabled or Disabled
-/***FROM BLYNK***/ 
+/***VIRTUAL VAR***/ 
 BLYNK_WRITE(V5) { // V5= Time Scheduler widget 
   TimeInputParam t(param);
 
