@@ -10,9 +10,12 @@
 // Reference BLYNK: https://github.com/blynkkk/blynk-library/releases/latest
  ******************************************/
 #include <Wire.h> // I2C Library
+
+#include <ESP8266WiFi.h> // ESP WiFi
+
+
 /* INCLUDE LIBRARIES */
 #define BLYNK_PRINT Serial
-#include <ESP8266WiFi.h> // ESP WiFi
 #include <Blynk.h>
 #include <BlynkSimpleEsp8266.h> // Blynk
 #include <OakOLED.h> // Display 
@@ -26,7 +29,7 @@
 
 /* Remote Switch 433Mhz */
 #include <RCSwitch.h>
-RCSwitch heartSwitch = RCSwitch(); // Define the heartswitch remota controller
+RCSwitch heartSwitch = RCSwitch(); // Define the heartswitch remote controller
 
 // calling NTPClient library
 #include <NTPClient.h>
@@ -35,10 +38,10 @@ RCSwitch heartSwitch = RCSwitch(); // Define the heartswitch remota controller
 
 #define REPORTING_PERIOD_MS 1000 // Ogni quanto si aggiornano i dati
 
-// Inizializzo Display
+// Initilize Display
 OakOLED oled; // Connections for OLED Display : SCL PIN - D1 , SDA PIN - D2 , INT PIN - D0
 
-// Inizializzo Pox
+// Initilize Pox
 MAX30105 particleSensor;
 
 const byte RATE_SIZE = 4; //Increase this for more averaging. 4 is good.
@@ -49,10 +52,10 @@ long lastBeat = 0; //Time at which the last beat occurred
 /* Setup a phisical PIN for trigger button */
 const int statusPin = D5;
 
-// the global variable for state of the time range : True if time in range, False if not
+/* Global variable for state of the time range : True if time in range, False if not */
 bool DateInRange;
 
-/* local variables for taking data from blynk application
+/* Local variables for taking data from blynk application
  *  arduino store time range when receiving from app blynk
  *  the data will be received when user change information in the application.
  *  if reset accurs or power off power on, this information will reset and losed, so you can think in stocking data in eeprom and load it in starting up
@@ -185,7 +188,7 @@ const unsigned char splash2 [] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
-// La funzione showSwitch() restituisce la stringa "switch on/off" dato 0/1
+// The showSwitch () function returns the given "switch on/off" then: string 0/1
 String showSwitch(boolean bol) {
 
   String caption="";
@@ -199,7 +202,7 @@ String showSwitch(boolean bol) {
 }
 
 // Suono buzzer
-void bebee(int beep, int mix) // Dove "mix" indica un moltiplicatore variabile
+void bebee(int beep, int mix) // Where "mix" indicates a variable multiplier
 {
   tone(buzzer, beep); delay(50);      
   noTone(buzzer); delay(50);  
@@ -233,9 +236,9 @@ delay(100);
     heartSwitch.setRepeatTransmit(4);
 
     // **** INTRO BUMPER ****
-    oled.begin(); // Inizializzo
-    oled.clearDisplay(); // Pulisci display
-    delay(100); // Attendo 100 ms
+    oled.begin(); // Initilize
+    oled.clearDisplay(); // Clean the display
+    delay(100); // wait 100 ms before start
     oled.drawBitmap( 0, 16, splash1, 45, 48, 1); // Carica Splash screen parte sinistra
     oled.display();
     
@@ -256,7 +259,7 @@ delay(100);
       delay(10);
      }
     
-    oled.drawBitmap( 46, 16, splash2, 82, 48, 1); // Carica Splash screen destra
+    oled.drawBitmap( 46, 16, splash2, 82, 48, 1); // Load left slash intro bmp
     bebee(1915,1.2);
     delay(100);
     oled.display();
@@ -266,9 +269,9 @@ delay(100);
     oled.display();
          
     delay(4000); // Per 4 sec. circa
-    oled.clearDisplay(); // Pulisci display
+    oled.clearDisplay(); // Re-Clean
 
-    // Attesa connessione Wifi + Heartbeat
+    // Wait connection wifi + Heartbeat
     oled.setTextSize(1);
     oled.setTextColor(1);
     oled.setCursor(19, 0);
@@ -282,14 +285,14 @@ delay(100);
   timeClient.begin(); // Start the NTP Service
 
     // Initialize sensor code
-    if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //Use default I2C port, 400kHz speed
+    if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) // Use default I2C port, 400kHz speed
     {
       Serial.println("MAX30105 was not found. Please check wiring/power. ");
       while (1);
     }
     Serial.println("Place your index finger on the sensor with steady pressure.");
   
-    particleSensor.setup(); //Configure sensor with default settings
+    particleSensor.setup(); // Configure sensor with default settings
     particleSensor.setPulseAmplitudeRed(0x0A); //Turn Red LED to low to indicate sensor is running
     particleSensor.setPulseAmplitudeGreen(0); //Turn off Green LED
      
@@ -299,7 +302,8 @@ delay(100);
 
 void switchAction(boolean action, boolean switching) {
     /* Switch Action Usage:
-     *  HEARTSWITCH CONTROLLER
+     * HEARTSWITCH CONTROLLER
+     * ITA:
      * Action=0 > Azione di default settata su switch off
      * Action=1 > Azione di default settata su switch on
      * La variabile Action è valorizzata dinamica per questa funzione
@@ -310,9 +314,21 @@ void switchAction(boolean action, boolean switching) {
      * 
      * Nel mio caso turnON deve verificarsi solo se action (cioè l'azione di default) e
      * switching (cioè se l'evento si è verificato) sono entrambi =TRUE o =FALSE, altrimenti vai su turnOFF
-     */
+       * ENG:
+       * Action = 0> Default action set to switch off
+       * Action = 1> Default action set on switch on
+       * The Action variable is dynamically enhanced for this function
+       *
+       * Switching = 1> The controller must perform the action present in Action
+       * Switching = 0> The controller must do the opposite of the action in Action
+       * The Switching variable is static value for this function, directly from the switch-case
+       *
+       * In my case turnON should only occur if action (i.e. the default action) e
+       * switching (i.e. if the event occurred) are both = TRUE or = FALSE, otherwise go to turnOFF
+       * /
+      */
  
-    if (action == switching) { // LOGICA: Se le 2 variabili sono entrambi TRUE o FALSE 
+    if (action == switching) { // LOGIC: If the 2 variables are both TRUE or FALSE
        turnON();
       } else { 
        turnOFF();
@@ -323,43 +339,44 @@ void switchAction(boolean action, boolean switching) {
 // FUNZIONE ACCENDI
 void turnON() {
   
-  if (!socketState) { // Controllo che non siano già acceso
+  if (!socketState) { // Check that they are not already ON
       heartSwitch.send(setON, 24); // ON
       bebee(1432,1);
   }
   Blynk.setProperty(feedback, "color", "#32A852"); // Led feedback update Red
-  socketState=true; // Registro lo stato come acceso
+  socketState=true; // Register as ON
   
 }
 
 // FUNZIONE SPEGNI
 void turnOFF() {
   
-  if (socketState) { // Controllo che non sia già spento
+  if (socketState) { // Check that they are not already OFF
       heartSwitch.send(setOFF, 24); // OFF
       bebee(1014,1);
   }
   Blynk.setProperty(feedback, "color", "#D3435C");  // Led Feedback update Green
-  socketState=false; // Registro lo stato come spento
+  socketState=false; // Register as OFF
   
 }
 
 
-//****
-// Parametrizzazione del tipo di soglia 
-// 1: Sopra la soglia
-// 2: Sotto la soglia
-// 3: Dentro il range +/- 4 unità (quindi 7 valori in tutto). !! Questo parametro è modificabile nelle variabili globali
-
-BLYNK_WRITE(V1)  { // V1= Tipo di evento
+/***FROM BLYNK***/ 
+BLYNK_WRITE(V1)  { // V1= Event Type
   
   String stringNull;
   stringNull = " ";
-  
-  eventType=param.asInt(); // Registro eventType di default
+
+   // Parameterization of the threshold type
+   // 1: Above the threshold
+   // 2: Below the threshold
+   // 3: Within the range +/- 4 units (therefore 7 values in all). !! This parameter is editable in global variables
+
+
+  eventType=param.asInt(); // This register the default 'eventType' from the app GUI
 
   /* In questo spazio si effettuato le valorizzazioni delle azioni da svolgere */ 
-  switch (param.asInt()) // Switch in base al tipo di evento
+  switch (param.asInt()) // Switchcase for 'eventType'
       {
       case 1: { // Over 
       Blynk.virtualWrite(V8, stringNull);
@@ -376,10 +393,11 @@ BLYNK_WRITE(V1)  { // V1= Tipo di evento
     }
     
  }
- 
-BLYNK_WRITE(V2) { // V2= Azioni da solvere su valore BPM (aggiornamento parametro range)
 
-    edge=param.asInt(); // assegno soglia selezionata per gestirla
+/***FROM BLYNK***/ 
+BLYNK_WRITE(V2) { // V2= Actions to be performed on BPM value (range parameter update)
+
+    edge=param.asInt(); // Check threshold selected to manage it
   
     from=(edge-range);
     to=(edge+range);
@@ -387,16 +405,18 @@ BLYNK_WRITE(V2) { // V2= Azioni da solvere su valore BPM (aggiornamento parametr
   // Send string to app
   stringRange=(String("▶")+from+String("〰")+to+String("◀"));
  
-  if (eventType == 3 ) { // Aggiorno la caption del range solo se il valore di V1=Range(4)
+  if (eventType == 3 ) { // I update the caption of the range only if the value of V1 = Range (4)
   Blynk.virtualWrite(V8, stringRange);
   }
   
 }
 
-BLYNK_WRITE(V3) { activator=param.asInt(); }  // V3= Tipo di azione ON / OFF
-BLYNK_WRITE(V4) { enabled=param.asInt(); } // V4= Abilitato o Disabilitato
-
-BLYNK_WRITE(V5) { // V5= Temporizzatore
+/***FROM BLYNK***/ 
+BLYNK_WRITE(V3) { activator=param.asInt(); }  // V3= Type of action ON / OFF
+/***FROM BLYNK***/ 
+BLYNK_WRITE(V4) { enabled=param.asInt(); } // V4= Enabled or Disabled
+/***FROM BLYNK***/ 
+BLYNK_WRITE(V5) { // V5= Time Scheduler widget 
   TimeInputParam t(param);
 
   // Process start time
@@ -534,8 +554,8 @@ void loop() {
     beatRT = 60 / (delta / 1000.0);
 
     peak=10; // define a peak
-    minBase=54; // Definisco un minimo tollerabile
-    maxBase=170; // Definisco un max tollerabile
+    minBase=54; // define a tolerable MIN
+    maxBase=170; // define a tolerable MAX
     
     if (beatRT < 255 && beatRT > 20)  {
       rates[rateSpot++] = (byte)beatRT; //Store this reading in the array
@@ -550,11 +570,11 @@ void loop() {
       // *******
       // False positive hacks
       // *******
-      if (BPM<minBase) BPM=0; // Se BPM è troppo basso allora annulla il valore
-      if (BPM>maxBase) BPM=0; // Se BPM è troppo alto allora annulla il valore
-      if (BPM==0) BPM=lastBPM; // Se BPM torna a 0 mostra comunque l'ultimo valore
-     if (BPM >(lastBPM+peak) && (lastBPM!=0)) BPM=lastBPM+(random(2,3)); // Se il nuovo BPM rilevato incrementa di un bel po' elemento precedente, allora aumenta per gradi
-     if (BPM <(lastBPM-peak) && (lastBPM!=0)) BPM=lastBPM-(random(2,3));  // Se il nuovo BPM rilevato decrementa di un bel po' elemento precedente, allora diminuisci per gradi
+      if (BPM<minBase) BPM=0; // If BPM is too low then cancel the value
+      if (BPM>maxBase) BPM=0; // If BPM is too high then cancel the value
+      if (BPM==0) BPM=lastBPM; // If BPM returns to 0 it still shows the last value
+     if (BPM >(lastBPM+peak) && (lastBPM!=0)) BPM=lastBPM+(random(2,3)); // If the newly detected BPM increases the previous element by quite a bit, then it increases by steps
+     if (BPM <(lastBPM-peak) && (lastBPM!=0)) BPM=lastBPM-(random(2,3));  // If the newly detected BPM decrements a lot earlier, then decrease by steps
     
         lastBPM=BPM; // Mantengo in memoria l'ultimo valore
         
@@ -598,7 +618,7 @@ void loop() {
  //        Blynk.virtualWrite(V9, SpO2); // V9=SpO2
 
 
-        // Switch-case con i 3 eventi: Up, Down, Range.
+        // Here 3 events Switch-case : OVER, UNDER, RANGE.
         // TRIGGERS ***
 
         if (enabled && DateInRange) {
@@ -613,11 +633,11 @@ void loop() {
             } 
        
      
-          switch (eventType) { // Switch in base al tipo di evento (menu a tendina V1)
+          switch (eventType) { // Switch according to the type of event (drop-down menu V1)
               
                 case 1: { // Over 
                   if (BPM>=edge) { 
-                        Serial.print("It's OVER the "); // Se battito superiore alla soglia
+                        Serial.print("It's OVER the "); // if BPM is above the threshold
                         Serial.println(edge);
                         btnState=true;
                         switchAction(activator,true); 
@@ -633,7 +653,7 @@ void loop() {
                 
                 case 2: { // Under
                   if (BPM<=edge) {            
-                        Serial.print("It's UNDER the "); // Se battito inferiore alla soglia
+                        Serial.print("It's UNDER the "); // if BPM is under the threshold
                         Serial.println(edge);
                         btnState=true;
                         switchAction(activator,true); 
@@ -648,7 +668,7 @@ void loop() {
                 }
                 
                 case 3: { // Range
-                  if ((BPM>=from && BPM<=to)) { // Se il BMP è entrato nel range
+                  if ((BPM>=from && BPM<=to)) { // if BPM is into the range
                         Serial.print("It's INNER the ");
                         Serial.println(edge);
                         btnState=true;
@@ -688,7 +708,7 @@ void loop() {
          oled.print("HeartSwitch");
 
 
-       // Scrivo "please wait" se battito rilevato ma BPM ancora =0
+       // I write a "please wait" if beat detected but BPM still = 0
        if ((irValue > 50000) && (BPM==0)) {
         oled.setTextSize(1);
         oled.setTextColor(1);
@@ -697,14 +717,14 @@ void loop() {
    
         } 
             
-      // Scrivo Icona cuore
+      // Heart Icon
        if ((irValue > 50000) && (BPM>0))  {
         oled.setTextSize(2);
         oled.setTextColor(1);
         oled.setCursor(8, 25);
         oled.print((char)3);
         } else {
-        BPM=0; // Azzera il valora di BPM
+        BPM=0; // force reset the BPM value
        }
          
         // Switchstate
