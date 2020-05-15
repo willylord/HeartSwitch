@@ -1,5 +1,5 @@
 /******************************************
-// HEARTSWITCH V.020.5 (May 2020)
+// HEARTSWITCH V.020.5 (blob master from april 2020)
 // --- automates our actions ---
 // AUTHORS: C.Cipresso - A.Verde , 2016-2020 
 // DEVICE: Lolin NodeMCU V3 + max30100 heartbeat + Display OLED SSD1306 128x64 (16pxYellow+48pxCyan) + GPIO 2 buttons remote control
