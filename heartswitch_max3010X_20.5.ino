@@ -217,9 +217,9 @@ void setup()
 delay(100);
   
     // Define Output
-    pinMode(statusPin, OUTPUT);
-    pinMode(buzzer, OUTPUT);
-    pinMode(radio, OUTPUT);
+    pinMode(statusPin, OUTPUT); // Use this virtual status Pin to check the HeartSwitch status
+    pinMode(buzzer, OUTPUT); // Beeeeb and/or led
+    pinMode(radio, OUTPUT); // 433 Mhz radio tx PIN
     pinMode(16, OUTPUT); // Heartbeat Interrupt
  
     // Debug console
@@ -336,7 +336,7 @@ void switchAction(boolean action, boolean switching) {
 
 } 
 
-// FUNZIONE ACCENDI
+// turn > ON funcition
 void turnON() {
   
   if (!socketState) { // Check that they are not already ON
@@ -348,7 +348,7 @@ void turnON() {
   
 }
 
-// FUNZIONE SPEGNI
+// turn > OFF funcition
 void turnOFF() {
   
   if (socketState) { // Check that they are not already OFF
