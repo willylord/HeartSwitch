@@ -746,12 +746,12 @@ void loop() {
         oled.setTextColor(1);
         oled.setCursor(75, 26);
         
-        // Se è diverso da zero allora, il braccila risulta indossato
+        // if different from ZERO, the wristband is weared
         
         if (BPM !=0) {     
           oled.println(BPM,0);
           } else {
-           oled.println("**"); // Altrimenti stampa l'asterisco
+           oled.println("**"); // Else print some **
           }
         
 /*        // SpO2 Label
