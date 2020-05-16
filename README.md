@@ -17,14 +17,25 @@ This project has been tested using:
 
 Blynk app lets you control any hardware connected to Digital and Analog pins without having to write any additional code.
 Lets you control any hardware connected to Digital and Analog pins without having to write any additional code.
+
 For any custimization, this is the Virtual Pin configuration:
+
 V0 > Heartbeat dashboard gauge
+
 V1 > Event Type ( (1)Over|(2)Under|(3)Range[5+1+5] )
+
 V2 > BPM setting
+
 V3 > Action setting
+
 V4 > On-line | Hold (Off-line)
+
 V5 > Time range scheduler
+
 V6 > Status virtual led (if the socket is ON/OFF)
+
+V7 > N.C.
+
 V8 > Selected Range label (visible just for V3=3)
 
 Please check that you have installed all the required libraries before uploading the sketch.
@@ -38,6 +49,7 @@ char pass[] = "[PaSsW0rD]";
 const long setON = 9327618;
 const long setOFF = 9327617;
 /*  **********************************  */
+
 
 Right! Configure your SSID and password WEP / WPA / WPA2 here.
 It can currently control an electrical outlet compatible with 433Mhz transmissions.
