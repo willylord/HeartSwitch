@@ -8,7 +8,7 @@ It connects directly to download the exact time from NTP. It does not necessary 
 
 You can use the MAX10300 / MAX 10302 / MAX10305 heart rate reader. They all work. We used the MAX10302 because some MAX10300s have design errors and need additional resistors. The MAX10305, on the other hand, has extra features that may not be necessary at this time.
 
-The device has two LEDs, one emitting red light, another emitting infrared light. For the pulse rate, only infrared light is needed. Both red and infrared light are used to measure oxygen levels in the blood.
+These sensors has two LEDs, one emitting red light, another emitting infrared light. For the pulse rate, only infrared light is needed. Both red and infrared light are used to measure oxygen levels in the blood.
 
 When the heart pumps blood, there is an increase in oxygenated blood due to the presence of more blood. As the heart relaxes, the volume of oxygenated blood also decreases. Knowing the time between the rise and fall of oxygenated blood, the pulse rate is determined.
 So that oxygenated blood absorbs more infrared light and passes more red light while deoxygenated blood absorbs red light and passes more infrared light. This is the main function of the MAX30102: it reads the absorption levels for both light sources and stores them in a buffer that can be read via I2C.
