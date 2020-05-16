@@ -41,18 +41,27 @@ V8 > Selected Range label (visible just for V3=3)
 Please check that you have installed all the required libraries before uploading the sketch.
 
 Before starting to load the code on your NodeMcu, remember to SEARCH and EDIT these params:
+
 /* *********************************** */
+
 /*   SETUP WI-FI   */
+
 char ssid[] = "[SSID]";
+
 char pass[] = "[PaSsW0rD]";
+
 /* ON/OFF Button 433mhz DECIMAL Decode */
+
 const long setON = 9327618;
+
 const long setOFF = 9327617;
+
 /*  **********************************  */
 
-
 Right! Configure your SSID and password WEP / WPA / WPA2 here.
+
 It can currently control an electrical outlet compatible with 433Mhz transmissions.
+
 You probably don't yet know the communication code of the remote control it wants to emulate. We ask you to use a sniffer for this. You can contact us if you need help. We will try to make the library compatible with your device.
 
 Support our mission on Kickstarter page and allow us to carry out this project. You will receive the exclusive home automation kit for the preview.
