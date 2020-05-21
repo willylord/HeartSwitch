@@ -238,7 +238,7 @@ delay(100);
     oled.begin(); // Initilize
     oled.clearDisplay(); // Clean the display
     delay(100); // wait 100 ms before start
-    oled.drawBitmap( 0, 16, splash1, 45, 48, 1); // Carica Splash screen parte sinistra
+    oled.drawBitmap( 0, 16, splash1, 45, 48, 1); // Load left skin of splash screen 
     oled.display();
     
     // Vector line animation
@@ -258,7 +258,7 @@ delay(100);
       delay(10);
      }
     
-    oled.drawBitmap( 46, 16, splash2, 82, 48, 1); // Load left slash intro bmp
+    oled.drawBitmap( 46, 16, splash2, 82, 48, 1); // Load complete intro bmp
     bebee(1915,1.2);
     delay(100);
     oled.display();
@@ -289,6 +289,7 @@ delay(100);
       Serial.println("MAX30105 was not found. Please check wiring/power. ");
       while (1);
     }
+    
     Serial.println("Place your index finger on the sensor with steady pressure.");
   
     particleSensor.setup(); // Configure sensor with default settings
@@ -374,8 +375,8 @@ BLYNK_WRITE(V1)  { // V1= Event Type
 
   eventType=param.asInt(); // This register the default 'eventType' from the app GUI
 
-  /* In questo spazio si effettuato le valorizzazioni delle azioni da svolgere */ 
-  switch (param.asInt()) // Switchcase for 'eventType'
+  /* Here the action values (Switchcase for 'eventType') : */ 
+  switch (param.asInt())  
       {
       case 1: { // Over 
       Blynk.virtualWrite(V8, stringNull);
@@ -519,12 +520,12 @@ void add_time_second(void) {
   }
 }
 
-// ******pox
-// sendUpTime() in questa funzione indico un intervallo ulteriore
+// ******BLYNK FUNCTION UPTIME********
+// sendUpTime() This function is used looped by Blynk
 
 void sendUptime() { 
 
-    delay(50);
+    delay(500); // for my case, I wait half a second
  
 } 
   
@@ -575,7 +576,7 @@ void loop() {
      if (BPM >(lastBPM+peak) && (lastBPM!=0)) BPM=lastBPM+(random(2,3)); // If the newly detected BPM increases the previous element by quite a bit, then it increases by steps
      if (BPM <(lastBPM-peak) && (lastBPM!=0)) BPM=lastBPM-(random(2,3));  // If the newly detected BPM decrements a lot earlier, then decrease by steps
     
-        lastBPM=BPM; // Mantengo in memoria l'ultimo valore
+        lastBPM=BPM; // Keep last value in memory
         
     }
  
@@ -596,9 +597,12 @@ void loop() {
     
         Serial.print("Heart rate: ");
         Serial.print(BPM);
+
+        /* SpO2 function suspended */
 //        Serial.print(" bpm / SpO2: ");
 //        Serial.print(SpO2);
 //        Serial.print(" % - ");
+
         Serial.print("Edge: ");
         Serial.print(edge);
         Serial.print(" - Default Action (on/off): ");
