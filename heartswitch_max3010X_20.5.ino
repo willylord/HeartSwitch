@@ -35,7 +35,7 @@ RCSwitch heartSwitch = RCSwitch(); // Define the heartswitch remote controller
 #include <WiFiUdp.h>
 
 
-#define REPORTING_PERIOD_MS 1000 // this for shoot the data online every second
+#define REPORTING_PERIOD_MS 1000 // This for shoot the data online every second
 
 // Initilize Display
 OakOLED oled; // Connections for OLED Display : SCL PIN - D1 , SDA PIN - D2 , INT PIN - D0
@@ -43,10 +43,10 @@ OakOLED oled; // Connections for OLED Display : SCL PIN - D1 , SDA PIN - D2 , IN
 // Initilize Pox
 MAX30105 particleSensor;
 
-const byte RATE_SIZE = 4; //Increase this for more averaging. 4 is good.
-byte rates[RATE_SIZE]; //Array of heart rates
+const byte RATE_SIZE = 4; // Increase this for more averaging. 4 is good.
+byte rates[RATE_SIZE]; // Array of heart rates
 byte rateSpot = 0;
-long lastBeat = 0; //Time at which the last beat occurred
+long lastBeat = 0; // Time at which the last beat occurred
 
 /* Setup a phisical PIN for trigger button */
 const int statusPin = D5;
@@ -98,7 +98,7 @@ char auth[] = "lkeO7sOGGaGbufgKl5Uq7FDRgR9hiZ3U";
 /* *********************************** */
 /*   SETUP WI-FI   */
 char ssid[] = "[SSID]";
-char pass[] = "[PaSsW0rD]";
+char pass[] = "[PaSsW0Rd]";
 
 /* ON/OFF Button 433mhz DECIMAL Decode */
 const long setON = 9327618;
@@ -270,11 +270,14 @@ delay(100);
     delay(4000); // Per 4 sec. circa
     oled.clearDisplay(); // Re-Clean
 
-    // Wait connection wifi + Heartbeat
+    // Wait connection wifi and Heartbeat sensor
     oled.setTextSize(1);
     oled.setTextColor(1);
     oled.setCursor(19, 0);
     oled.print("CONNECTING ... ");
+    oled.setCursor(3, 56);
+    oled.print("SSID: ");
+    oled.print(ssid); // Write the SSID
     oled.display();
    
   Blynk.begin(auth, ssid, pass); // Server / Wi-Fi auth 
@@ -379,16 +382,16 @@ BLYNK_WRITE(V1)  { // V1= Event Type
   switch (param.asInt())  
       {
       case 1: { // Over 
-      Blynk.virtualWrite(V8, stringNull);
-      break;
+       Blynk.virtualWrite(V8, stringNull);
+       break;
       }
       case 2: { // Under
-      Blynk.virtualWrite(V8, stringNull);
-      break;
+       Blynk.virtualWrite(V8, stringNull);
+       break;
       }
       case 3: { // Range
-      Blynk.virtualWrite(V8, stringRange);
-      break;
+       Blynk.virtualWrite(V8, stringRange);
+       break;
       }
     }
     
@@ -406,7 +409,7 @@ BLYNK_WRITE(V2) { // V2= Actions to be performed on BPM value (range parameter u
   stringRange=(String("▶")+from+String("〰")+to+String("◀"));
  
   if (eventType == 3 ) { // I update the caption of the range only if the value of V1 = Range (4)
-  Blynk.virtualWrite(V8, stringRange);
+    Blynk.virtualWrite(V8, stringRange);
   }
   
 }
@@ -525,11 +528,10 @@ void add_time_second(void) {
 
 void sendUptime() { 
 
-    delay(500); // for my case, I wait half a second
+    delay(100); // for my case performs awaiting gap just for 100ms
  
 } 
   
-
 
 void loop() {
 
@@ -537,7 +539,7 @@ void loop() {
   timer.run();  // Initiates BlynkTimer
   time_tick(); // Autoupdate current time
 
-  btnState=digitalRead(statusPin); // Registro lo stato iniziale dello switch
+  btnState=digitalRead(statusPin); // Get and saving the Switch (on/off) initial state 
 
 
 
@@ -547,7 +549,7 @@ void loop() {
   long irValue = particleSensor.getIR();
   if (checkForBeat(irValue) == true)  {
     
-    // We sensed a beat!
+    // We sensed a beat
     long delta = millis() - lastBeat;
     lastBeat = millis();
 
@@ -558,8 +560,8 @@ void loop() {
     maxBase=170; // define a tolerable MAX
     
     if (beatRT < 255 && beatRT > 20)  {
-      rates[rateSpot++] = (byte)beatRT; //Store this reading in the array
-      rateSpot %= RATE_SIZE; //Wrap variable
+      rates[rateSpot++] = (byte)beatRT; // Store this reading in the array
+      rateSpot %= RATE_SIZE; // Wrap variable
 
       //Take average of basics BPM readings
       BPM = 0;
@@ -618,7 +620,8 @@ void loop() {
 
         Blynk.virtualWrite(V0, BPM); // V0=BPM
         Blynk.virtualWrite(V10, btnState); // V10=Gfx Feedback State
- //        Blynk.virtualWrite(V9, SpO2); // V9=SpO2
+
+ //        Blynk.virtualWrite(V9, SpO2); // V9=SpO2 == DISABLED
 
 
         // Here 3 events Switch-case : OVER, UNDER, RANGE.
@@ -680,11 +683,12 @@ void loop() {
                         btnState=false;
                         switchAction(activator,false); 
                     }  
-                        infoAction+=(char)16;
-                        infoAction+=from;
-                        infoAction+=(char)126;
-                        infoAction+=to;
-                        infoAction+=(char)17;
+                        // Composing the range info string
+                        infoAction+=(char)16; // arrow
+                        infoAction+=from; // FROM
+                        infoAction+=(char)126; // tilde-dash
+                        infoAction+=to; // TO
+                        infoAction+=(char)17; // arrow
                 break;
                 }
           
@@ -692,7 +696,7 @@ void loop() {
               
         } else {
              
-             infoAction="NO SCHEDULED ACTIONS";
+             infoAction="FREE FROM SCHEDULES";
              }  // End enabled case
 
         digitalWrite(statusPin, btnState); // Update Pin status
@@ -707,7 +711,7 @@ void loop() {
          if (timeClient.getMinutes()<10) oled.print("0");
          oled.print(timeClient.getMinutes());  
          oled.print(" ");
-    //     oled.print(wd[timeClient.getDay()]);  
+    //     oled.print(wd[timeClient.getDay()]);  // write the day week
          oled.print("HeartSwitch");
 
 
@@ -750,12 +754,12 @@ void loop() {
         oled.setTextColor(1);
         oled.setCursor(75, 26);
         
-        // if different from ZERO, the wristband is weared
+        // if the BPM different from ZERO, the wristband is weared
         
         if (BPM !=0) {     
           oled.println(BPM,0);
           } else {
-           oled.println("**"); // Else print some **
+           oled.println("**"); // Else print some '**'
           }
         
 /*        // SpO2 Label
@@ -775,7 +779,7 @@ void loop() {
       oled.drawFastHLine( 0, 47, 128, 1);
                         
         oled.setTextSize(1);
-        oled.setCursor(2, 55);     
+        oled.setCursor(3, 55);     
         oled.print(infoAction);
         
         oled.display();
