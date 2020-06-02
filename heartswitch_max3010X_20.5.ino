@@ -43,7 +43,7 @@ OakOLED oled; // Connections for OLED Display : SCL PIN - D1 , SDA PIN - D2 , IN
 // Initilize Pox
 MAX30105 particleSensor;
 
-const byte RATE_SIZE = 4; // Increase this for more averaging. 4 is good.
+const byte RATE_SIZE = 5; // Increase this for more averaging. 4 is good, 5 is better.
 byte rates[RATE_SIZE]; // Array of heart rates
 byte rateSpot = 0;
 long lastBeat = 0; // Time at which the last beat occurred
@@ -87,7 +87,6 @@ String mo[12]={"GEN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV"
 #define buzzer D6 // D6 Piezo buzzer
 #define radio D7 // D7 Remote radio TX at 433mhz
 #define feedback V6 // V6 used for feedback led
-WidgetLED socket(feedback);
       
 BlynkTimer timer;  // Define the timer using the BlynkTimer library
 
@@ -97,8 +96,8 @@ char auth[] = "lkeO7sOGGaGbufgKl5Uq7FDRgR9hiZ3U";
 
 /* *********************************** */
 /*   SETUP WI-FI   */
-char ssid[] = "[SSID]";
-char pass[] = "[PaSsW0Rd]";
+//char ssid[] = "iPhone"; // Sample
+//char pass[] = "[PaSsW0Rd]"; // Sample
 
 /* ON/OFF Button 433mhz DECIMAL Decode */
 const long setON = 9327618;
@@ -117,6 +116,9 @@ const long UpdateTime = 60000; // interval to recheck time from NTP server in Mi
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, NTP_Server, utcOffsetInSeconds, UpdateTime);
 
+// Define the WdgetLed into the setup
+WidgetLED statusLed(feedback);
+  
 String stringRange, infoAction, watchdog;
 boolean btnState, socketState; // Bool global values
 
@@ -194,8 +196,10 @@ String showSwitch(boolean bol) {
  
         if (bol==true)  {
         caption= caption+((char)15); // Aggiunto simbolo ON
+        statusLed.on(); 
         } else {
         caption= caption+((char)9); // Aggiungo simbolo OFF
+        statusLed.off(); 
         }
         return caption; // restituisce label
 }
@@ -232,7 +236,7 @@ delay(100);
     heartSwitch.setPulseLength(1000);
     
     // Set number of transmission tries.
-    heartSwitch.setRepeatTransmit(4);
+    heartSwitch.setRepeatTransmit(8);
 
     // **** INTRO BUMPER ****
     oled.begin(); // Initilize
@@ -275,7 +279,7 @@ delay(100);
     oled.setTextColor(1);
     oled.setCursor(19, 0);
     oled.print("CONNECTING ... ");
-    oled.setCursor(3, 56);
+    oled.setCursor(7, 56);
     oled.print("SSID: ");
     oled.print(ssid); // Write the SSID
     oled.display();
@@ -283,7 +287,7 @@ delay(100);
   Blynk.begin(auth, ssid, pass); // Server / Wi-Fi auth 
   
   Blynk.syncAll(); // Update all values on the App
-
+  
   timeClient.begin(); // Start the NTP Service
 
     // Initialize sensor code
@@ -298,7 +302,8 @@ delay(100);
     particleSensor.setup(); // Configure sensor with default settings
     particleSensor.setPulseAmplitudeRed(0x0A); //Turn Red LED to low to indicate sensor is running
     particleSensor.setPulseAmplitudeGreen(0); //Turn off Green LED
-     
+
+
   timer.setInterval(2000L, sendUptime); // Set send uptime
   
 }
@@ -330,7 +335,9 @@ void switchAction(boolean action, boolean switching) {
        * switching (i.e. if the event occurred) are both = TRUE or = FALSE, otherwise go to turnOFF
        * /
       */
- 
+
+    
+
     if (action == switching) { // LOGIC: If the 2 variables are both TRUE or FALSE
        turnON();
       } else { 
@@ -341,25 +348,23 @@ void switchAction(boolean action, boolean switching) {
 
 // turn > ON funcition
 void turnON() {
-  
   if (!socketState) { // Check that they are not already ON
       heartSwitch.send(setON, 24); // ON
-      bebee(1432,1);
+      bebee(1432,1); // Sound ON
   }
-  Blynk.setProperty(feedback, "color", "#32A852"); // Led feedback update Red
-  socketState=true; // Register as ON
+ 
+  socketState=true; // Register global as ON
   
 }
 
 // turn > OFF funcition
 void turnOFF() {
-  
   if (socketState) { // Check that they are not already OFF
       heartSwitch.send(setOFF, 24); // OFF
-      bebee(1014,1);
+      bebee(1014,1); // Sound OFF
   }
-  Blynk.setProperty(feedback, "color", "#D3435C");  // Led Feedback update Green
-  socketState=false; // Register as OFF
+  
+  socketState=false; // Register global as OFF
   
 }
 
@@ -556,7 +561,7 @@ void loop() {
     beatRT = 60 / (delta / 1000.0);
 
     peak=10; // define a peak
-    minBase=54; // define a tolerable MIN
+    minBase=random(54,56); // define a tolerable MIN
     maxBase=170; // define a tolerable MAX
     
     if (beatRT < 255 && beatRT > 20)  {
