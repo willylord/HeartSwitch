@@ -1,5 +1,6 @@
+
 /******************************************
-// HEARTSWITCH V.020.5 (blob master from 05.2020)
+// HEARTSWITCH V.020.6 (blob master from 06.2020)
 // --- automates our actions ---
 // AUTHORS: C.Cipresso - A.Verde , 2016-2020 
 // DEVICE: Lolin NodeMCU V3 + max30100 heartbeat + Display OLED SSD1306 128x64 (16pxYellow+48pxCyan) + GPIO 2 buttons remote control
@@ -20,7 +21,7 @@
 #define BLYNK_PRINT Serial
 #include <Blynk.h>
 #include <BlynkSimpleEsp8266.h> // Blynk
-#include <OakOLED.h> // Display 
+#include <OakOLED.h> // Display SSD1306
 
 /* Pulse sensor */
 #include <MAX30105.h>
@@ -50,6 +51,7 @@ long lastBeat = 0; // Time at which the last beat occurred
 
 /* Setup a phisical PIN for trigger button */
 const int statusPin = D5;
+const int heartPin = D8; 
 
 /* Global variable for state of the time range : True if time in range, False if not */
 bool DateInRange;
@@ -96,8 +98,10 @@ char auth[] = "lkeO7sOGGaGbufgKl5Uq7FDRgR9hiZ3U";
 
 /* *********************************** */
 /*   SETUP WI-FI   */
-//char ssid[] = "iPhone"; // Sample
-//char pass[] = "[PaSsW0Rd]"; // Sample
+char ssid[] = "iPhone"; // Sample
+char pass[] = "[PaSsW0Rd]"; // Sample
+//char ssid[] = "willylord"; 
+//char pass[] = "willylord2"; 
 
 /* ON/OFF Button 433mhz DECIMAL Decode */
 const long setON = 9327618;
@@ -204,7 +208,27 @@ String showSwitch(boolean bol) {
         return caption; // restituisce label
 }
 
-// Suono buzzer
+
+// Pulse loop
+void heartLed(int del) // Where "del" is the time dalay
+{     
+
+   for(int dutyCycle = 0; dutyCycle < del/5; dutyCycle++){   
+        // changing the LED brightness with PWM
+        analogWrite(heartPin, dutyCycle);
+        delay(1);
+      }
+    
+      // decrease the LED brightness
+      for(int dutyCycle = del; dutyCycle > 0; dutyCycle--){
+        // changing the LED brightness with PWM
+        analogWrite(heartPin, dutyCycle);
+        delay(1);
+      }
+      
+}
+    
+// Beep buzzer sound
 void bebee(int beep, int mix) // Where "mix" indicates a variable multiplier
 {
   tone(buzzer, beep); delay(50);      
@@ -263,8 +287,8 @@ delay(100);
      }
     
     oled.drawBitmap( 46, 16, splash2, 82, 48, 1); // Load complete intro bmp
-    bebee(1915,1.2);
-    delay(100);
+    bebee(1915,1.33); // Take a beep
+    delay(80);
     oled.display();
  
     oled.setCursor(0,0);
@@ -350,7 +374,7 @@ void switchAction(boolean action, boolean switching) {
 void turnON() {
   if (!socketState) { // Check that they are not already ON
       heartSwitch.send(setON, 24); // ON
-      bebee(1432,1); // Sound ON
+      bebee(1432,1.1); // Sound ON
   }
  
   socketState=true; // Register global as ON
@@ -361,7 +385,7 @@ void turnON() {
 void turnOFF() {
   if (socketState) { // Check that they are not already OFF
       heartSwitch.send(setOFF, 24); // OFF
-      bebee(1014,1); // Sound OFF
+      bebee(1014,1.1); // Sound OFF
   }
   
   socketState=false; // Register global as OFF
@@ -488,7 +512,7 @@ void time_tick(void)
 
 /* TIME CLOCK every SECONDs
  * ********
- * this function increment time every second,
+ * this function increments time slots every second,
  * every second need to be called to auto update time
  * seconds increment + 1
  * when second = 59 -> second = 0 and minute +1
@@ -580,9 +604,10 @@ void loop() {
       if (BPM<minBase) BPM=0; // If BPM is too low then cancel the value
       if (BPM>maxBase) BPM=0; // If BPM is too high then cancel the value
       if (BPM==0) BPM=lastBPM; // If BPM returns to 0 it still shows the last value
-     if (BPM >(lastBPM+peak) && (lastBPM!=0)) BPM=lastBPM+(random(2,3)); // If the newly detected BPM increases the previous element by quite a bit, then it increases by steps
-     if (BPM <(lastBPM-peak) && (lastBPM!=0)) BPM=lastBPM-(random(2,3));  // If the newly detected BPM decrements a lot earlier, then decrease by steps
-    
+      if (BPM >(lastBPM+peak) && (lastBPM!=0)) BPM=lastBPM+(random(2,3)+1); // If the newly detected BPM increases the previous element by quite a bit, then it increases by steps
+      if (BPM <(lastBPM-peak) && (lastBPM!=0)) BPM=lastBPM-(random(2,3)+1);  // If the newly detected BPM decrements a lot earlier, then decrease by steps
+      
+      
         lastBPM=BPM; // Keep last value in memory
         
     }
@@ -727,7 +752,7 @@ void loop() {
         oled.setCursor(3, 27);
         oled.print("...");
    
-        } 
+     } 
             
       // Heart Icon
        if ((irValue > 50000) && (BPM>0))  {
@@ -763,24 +788,11 @@ void loop() {
         
         if (BPM !=0) {     
           oled.println(BPM,0);
+          heartLed(BPM/0.12); // Blink the led every beat (delay 500 for 60 BPM)
           } else {
            oled.println("**"); // Else print some '**'
           }
         
-/*        // SpO2 Label
-        oled.setTextSize(2);
-        oled.setTextColor(1);
-        oled.setCursor(1, 47);
-        oled.println("SpO2:");
-
-        // SpO2 Value
-        oled.setTextSize(2);
-        oled.setTextColor(1);
-        oled.setCursor(61, 47);
-      //  oled.println(pox.getSpO2());
-        oled.println(SpO2,1);
-*/       
-   
       oled.drawFastHLine( 0, 47, 128, 1);
                         
         oled.setTextSize(1);
